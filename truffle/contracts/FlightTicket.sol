@@ -31,24 +31,27 @@ contract FlightTicket {
         _to = to;
         _date = date;
         _price = price;
-        _refundPolicy[100] = 10; //100 minutes later = 10% refund
-        _refundPolicy[200] = 20;
-        _refundPolicy[300] = 50;
+        _refundPolicy[0] = 0;
+        _refundPolicy[90] = 15; //100 minutes later = 10% refund
+        _refundPolicy[120] = 30;
+        _refundPolicy[180] = 100;
     }
     
     function validateFlight(uint delay) public onlyValidator{
-        if (delay <= 100) {
-            _delay = 100;
+        if (delay >= 180) {
+            _delay = 180;
         }
-        else if (delay <= 200) {
-            _delay = 200;
+        else if (delay >= 120) {
+            _delay = 120;
+        }
+        else if (delay >= 90){
+            _delay = 90;
         }
         else {
-            _delay = 300;
+            _delay = 0;
         }
         _percentRefund = _refundPolicy[_delay];
         _totalRefund = (_percentRefund*_price)/100;
-        //emit flightValidation(_userDetails["userAccount"], _airlineDetails["airlineDetails"], _totalRefund);
     }
 
     function getPercentRefund() public returns (uint){

@@ -8,7 +8,7 @@ var mongobuy = require('../mongodb/buylist.js')
 class BlockchainEvents {
 
     constructor() {
-        // this.provider = new Web3.providers.HttpProvider('http://40.117.129.48:8545')
+        // this.provider = new Web3.providers.WebsocketProvider('ws://104.211.52.151:8547')
         this.provider = new Web3.providers.HttpProvider('http://localhost:8545')
         this.web3 = new Web3(this.provider);
         this.web3.eth.getAccounts()
