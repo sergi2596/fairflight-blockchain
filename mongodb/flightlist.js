@@ -4,6 +4,9 @@ mongoose.connect("mongodb://fairflight-mongo:oJQdgXjpwcf5nL7MJ38tY6B1rs4AZH2T1wr
     .then(() => {
         console.log("Successfully conected to mongodb")
     })
+    .catch((error) => {
+        console.log("Unable to connect to database")
+    })
 
 
 var flitghSchema = new Schema({

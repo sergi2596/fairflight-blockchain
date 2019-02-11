@@ -19,7 +19,10 @@ class BlockchainEvents {
                 this.ticket = contract(require('../truffle/build/contracts/FlightTicket.json'));
                 this.ticket.setProvider(this.provider);
                 this.ticket.defaults(defaults);
-            });
+            })
+            .catch((error) => {
+                console.log("Error getting coinbase")
+            })
     }
 
     createTicket(flightinfo) {
@@ -36,6 +39,9 @@ class BlockchainEvents {
                         .then((error, response) => {
                             resolve('Ticket saved to database')
                         })
+                        .catch((error) => {
+                            resolve(error)
+                        })
                 })
         })
         return statusCode
@@ -46,21 +52,33 @@ class BlockchainEvents {
         const statusCode = new Promise((resolve, reject) => {
             mongoflight.findFlightbyId(flightNumber)
                 .then((flightinfo) => {
-                    var ticket = new this.web3.eth.Contract(contractData.abi, flightinfo['blockchainId'], {from: this.coinbase})
+                    var ticket = new this.web3.eth.Contract(contractData.abi, flightinfo['blockchainId'], { from: this.coinbase })
                     ticket.methods.validateFlight(delay).send()
-                    .then((response) => {
-                        var percentPromise = ticket.methods.getPercentRefund().call();
-                        var totalPromise = ticket.methods.getTotalRefund().call();
-                        Promise.all([percentPromise, totalPromise]).then((values) => {
-                            var percentRefund = values[0];
-                            var totalRefund = values[1];
-                            mongoflight.updateFlightInfo(flightNumber, delay, percentRefund, totalRefund)
-                            .then((response) => {
-                                console.log('Database updated')
-                                resolve('OK')
+                        .then((response) => {
+                            var percentPromise = ticket.methods.getPercentRefund().call();
+                            var totalPromise = ticket.methods.getTotalRefund().call();
+                            Promise.all([percentPromise, totalPromise]).then((values) => {
+                                var percentRefund = values[0];
+                                var totalRefund = values[1];
+                                mongoflight.updateFlightInfo(flightNumber, delay, percentRefund, totalRefund)
+                                    .then((response) => {
+                                        console.log('Database updated')
+                                        resolve('Ticket successfully validated')
+                                    })
                             })
                         })
-                    })
+                        .catch((error) => {
+                            msg = "Error validating ticket";
+                            console.log(msg)
+                            console.log(error)
+                            resolve(msg)
+                        })
+                })
+                .catch((error) => {
+                    msg = "Could not find flight with id ", flightNumber;
+                    console.log(msg)
+                    console.log(error)
+                    resolve(msg)
                 })
         })
 
